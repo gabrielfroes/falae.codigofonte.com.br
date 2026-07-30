@@ -1,17 +1,28 @@
-// Entrypoint do processo worker (consumidor das filas BullMQ).
-// Fase 0: só valida a conexão com Redis. As filas e os processors
-// reais de comment-events/actions entram na Fase 1.
+// Entrypoint do processo worker — consome as filas BullMQ populadas pela
+// rota de webhook. Roda como um container separado no docker-compose.
 
-import { Redis } from "ioredis";
+import { Worker } from "bullmq";
+import { ACTIONS_QUEUE, COMMENT_EVENTS_QUEUE, redisConnection } from "@/lib/queue";
+import { processCommentEvent } from "@/worker/comment-events-processor";
+import { processAction } from "@/worker/actions-processor";
 
-const connection = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379", {
-  maxRetriesPerRequest: null,
+const commentEventsWorker = new Worker(COMMENT_EVENTS_QUEUE, processCommentEvent, {
+  connection: redisConnection,
+  concurrency: 5,
 });
 
-connection.on("connect", () => {
-  console.log("[worker] conectado ao Redis, aguardando filas da Fase 1");
+// Throttle conservador para respeitar o rate limit de private reply da Meta
+// (750/h por conta para posts/reels) até termos limitação por conta.
+const actionsWorker = new Worker(ACTIONS_QUEUE, processAction, {
+  connection: redisConnection,
+  concurrency: 5,
+  limiter: { max: 60, duration: 60_000 },
 });
 
-connection.on("error", (err) => {
-  console.error("[worker] erro de conexão com Redis:", err);
-});
+for (const worker of [commentEventsWorker, actionsWorker]) {
+  worker.on("failed", (job, err) => {
+    console.error(`[worker] job ${job?.id} da fila ${worker.name} falhou:`, err);
+  });
+}
+
+console.log("[worker] rodando, aguardando jobs em comment-events e actions");

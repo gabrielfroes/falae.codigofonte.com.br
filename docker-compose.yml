@@ -6,6 +6,11 @@ services:
       POSTGRES_USER: falae
       POSTGRES_PASSWORD: falae
       POSTGRES_DB: falae
+    ports:
+      # Só em loopback — para dev local (rodando app fora do compose) e
+      # acesso administrativo no próprio VPS, nunca exposto à internet.
+      # Ajuste a porta do host se 5432 já estiver em uso na sua máquina.
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -17,6 +22,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
 
