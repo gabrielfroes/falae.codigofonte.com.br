@@ -1,0 +1,251 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+  font-family: var(--font-geist-sans);
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #111;
+  color: #fff;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar h2 {
+  font-size: 18px;
+  margin: 0 12px 20px;
+}
+
+.sidebar a {
+  color: #ccc;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.sidebar a:hover {
+  background: #1f1f1f;
+  color: #fff;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #2a2a2a;
+}
+
+.sidebarFooter p {
+  color: #888;
+  font-size: 12px;
+  padding: 0 12px 8px;
+}
+
+.logoutButton {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  background: #1f1f1f;
+  color: #fff;
+}
+
+.main {
+  flex: 1;
+  padding: 32px 40px;
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pageHeader h1 {
+  font-size: 24px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  vertical-align: top;
+}
+
+.table th {
+  color: #666;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.button {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.buttonSecondary {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #111;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.buttonDanger {
+  background: #fdecea;
+  border: 1px solid #f5c6c1;
+  color: #c0392b;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badgeOk {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+
+.badgeMuted {
+  background: #f1f1f1;
+  color: #666;
+}
+
+.badgeErro {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+}
+
+.formRow > .formGroup {
+  flex: 1;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.muted {
+  color: #888;
+  font-size: 13px;
+}
+
+.emptyState {
+  color: #888;
+  font-size: 14px;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.counters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.counterCard {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 16px 20px;
+  min-width: 140px;
+}
+
+.counterCard .value {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.counterCard .label {
+  color: #666;
+  font-size: 13px;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}

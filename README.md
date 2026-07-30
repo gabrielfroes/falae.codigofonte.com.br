@@ -9,8 +9,11 @@ Passo a passo de configuração do app na Meta (contas, permissões, webhook):
 [`docs/setup-meta.md`](docs/setup-meta.md). Notas sobre a API oficial da Meta usada
 (versões, endpoints, limites): [`docs/meta-api-notes.md`](docs/meta-api-notes.md).
 
-**Estado atual:** scaffold do projeto (Fase 0). O núcleo de automação (webhook, fila,
-adapter Instagram, painel) ainda não foi implementado.
+**Estado atual:** núcleo de automação (webhook, fila, adapter Instagram) e painel
+(conexões, automações, atividade, configurações) implementados. Fluxo de conexão real
+com o Instagram ainda depende de credenciais reais do app na Meta (veja
+`docs/setup-meta.md`) — sem elas, a automação roda ponta a ponta localmente, mas o envio
+de mensagens de verdade falha (esperado, ver `scripts/simulate-webhook.ts`).
 
 ## Stack
 
@@ -43,6 +46,27 @@ subir só essas duas dependências via Docker Compose:
 
 ```bash
 docker compose up postgres redis
+# se a porta 5432 já estiver em uso na sua máquina:
+# POSTGRES_HOST_PORT=5433 docker compose up postgres redis
+```
+
+## Painel — primeiro acesso
+
+Não existe cadastro aberto. O primeiro usuário (admin) é criado direto no servidor:
+
+```bash
+pnpm create-admin seuemail@exemplo.com "Seu Nome" "uma senha com 8+ caracteres"
+```
+
+Depois disso, acesse `/login`, entre com esse usuário e convide o resto do time em
+Configurações — o convite ainda não envia email automaticamente, o link aparece na tela
+para você copiar e enviar por onde preferir.
+
+Para testar o painel com dados de exemplo (uma conta e uma automação fake, sem depender
+da Meta):
+
+```bash
+pnpm db:seed
 ```
 
 ## Testando webhooks da Meta localmente

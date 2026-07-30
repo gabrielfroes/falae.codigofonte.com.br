@@ -9,8 +9,9 @@ services:
     ports:
       # Só em loopback — para dev local (rodando app fora do compose) e
       # acesso administrativo no próprio VPS, nunca exposto à internet.
-      # Ajuste a porta do host se 5432 já estiver em uso na sua máquina.
-      - "127.0.0.1:5432:5432"
+      # Se 5432 já estiver em uso (outro projeto na mesma máquina), rode com
+      # POSTGRES_HOST_PORT=5433 docker compose up -d
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +24,7 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     ports:
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:${REDIS_HOST_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
 
