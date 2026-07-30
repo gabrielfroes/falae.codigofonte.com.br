@@ -1,0 +1,217 @@
+// Schema do Falae — ver docs/setup-meta.md e o plano de arquitetura (Fase 0)
+// para o racional de cada modelo.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  instagram
+  youtube
+  facebook
+}
+
+enum AccountStatus {
+  conectado
+  expirado
+  erro
+}
+
+enum UserRole {
+  admin
+  membro
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  nome         String
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(membro)
+  criadoEm     DateTime @default(now()) @map("criado_em")
+
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+model Invite {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  expiraEm  DateTime  @map("expira_em")
+  aceitoEm  DateTime? @map("aceito_em")
+  criadoEm  DateTime  @default(now()) @map("criado_em")
+
+  @@map("invites")
+}
+
+model Account {
+  id                   String        @id @default(cuid())
+  platform             Platform
+  externalId           String        @map("external_id")
+  username             String
+  accessTokenEncrypted String        @map("access_token_encrypted")
+  tokenExpiresAt        DateTime?    @map("token_expires_at")
+  status               AccountStatus @default(conectado)
+  criadoEm             DateTime      @default(now()) @map("criado_em")
+
+  automations Automation[]
+  events      Event[]
+  blocklist   BlocklistEntry[]
+
+  @@unique([platform, externalId])
+  @@map("accounts")
+}
+
+enum AutomationScope {
+  todos_posts
+  posts_especificos
+}
+
+enum AutomationStatus {
+  ativa
+  pausada
+}
+
+model Automation {
+  id               String            @id @default(cuid())
+  accountId        String            @map("account_id")
+  nome             String
+  scope            AutomationScope   @default(todos_posts)
+  postIds          Json?             @map("post_ids")
+  status           AutomationStatus  @default(pausada)
+  delayMinSeconds  Int               @default(5) @map("delay_min_seconds")
+  delayMaxSeconds  Int               @default(30) @map("delay_max_seconds")
+  criadoEm         DateTime          @default(now()) @map("criado_em")
+
+  account               Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  keywords              Keyword[]
+  publicReplyTemplates  PublicReplyTemplate[]
+  dmTemplate            DmTemplate?
+  events                Event[]
+
+  @@map("automations")
+}
+
+enum MatchMode {
+  exato
+  contem
+}
+
+model Keyword {
+  id           String    @id @default(cuid())
+  automationId String    @map("automation_id")
+  termo        String
+  matchMode    MatchMode @default(contem) @map("match_mode")
+
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@map("keywords")
+}
+
+model PublicReplyTemplate {
+  id           String @id @default(cuid())
+  automationId String @map("automation_id")
+  texto        String
+
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@map("public_reply_templates")
+}
+
+model DmTemplate {
+  id           String @id @default(cuid())
+  automationId String @unique @map("automation_id")
+  texto        String
+  link         String
+
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@map("dm_templates")
+}
+
+enum EventStatus {
+  sem_match
+  match
+  ignorado_blocklist
+  ignorado_proprio_perfil
+}
+
+model Event {
+  id                 String      @id @default(cuid())
+  automationId       String?     @map("automation_id")
+  accountId          String      @map("account_id")
+  externalCommentId  String      @unique @map("external_comment_id")
+  externalMediaId    String      @map("external_media_id")
+  autorUsername      String      @map("autor_username")
+  autorExternalId    String      @map("autor_external_id")
+  textoComentario    String      @map("texto_comentario")
+  status             EventStatus
+  payloadRaw         Json        @map("payload_raw")
+  criadoEm           DateTime    @default(now()) @map("criado_em")
+
+  account     Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  automation  Automation?  @relation(fields: [automationId], references: [id], onDelete: SetNull)
+  deliveries  Delivery[]
+
+  @@map("events")
+}
+
+enum DeliveryTipo {
+  resposta_publica
+  dm
+}
+
+enum DeliveryStatus {
+  enviado
+  falhou
+  expirado
+  rate_limited
+}
+
+model Delivery {
+  id                 String         @id @default(cuid())
+  eventId            String         @map("event_id")
+  tipo               DeliveryTipo
+  status             DeliveryStatus
+  motivoFalha        String?        @map("motivo_falha")
+  externalMessageId  String?        @map("external_message_id")
+  tentativas         Int            @default(0)
+  criadoEm           DateTime       @default(now()) @map("criado_em")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("deliveries")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  acao       String
+  entidade   String
+  entidadeId String   @map("entidade_id")
+  diff       Json?
+  criadoEm   DateTime @default(now()) @map("criado_em")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_log")
+}
+
+model BlocklistEntry {
+  id                 String   @id @default(cuid())
+  accountId          String   @map("account_id")
+  externalUsername   String?  @map("external_username")
+  externalId         String?  @map("external_id")
+  criadoEm           DateTime @default(now()) @map("criado_em")
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("blocklist")
+}
