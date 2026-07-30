@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "@/app/form.module.css";
 
 const ERROS: Record<string, string> = {
@@ -17,8 +18,15 @@ export default async function LoginPage({
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1>Falae</h1>
-        <p className={styles.subtitle}>Painel interno do Código Fonte TV.</p>
+        <Image
+          src="/codigofonte-icon.svg"
+          alt=""
+          width={56}
+          height={56}
+          className={styles.logo}
+        />
+        <h1>Falae do Código Fonte</h1>
+        <p className={styles.subtitle}>Automação de Comentários e DMs.</p>
 
         {erro && <p className={styles.error}>{ERROS[erro] ?? "Não foi possível entrar."}</p>}
 

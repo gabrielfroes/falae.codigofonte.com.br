@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { fetchMediaByAccount } from "@/lib/instagram/media";
 import styles from "../../panel.module.css";
 import { AutomationForm } from "../AutomationForm";
 import { deleteAutomationAction, testAutomationAction, toggleStatusAction, updateAutomationAction } from "../actions";
@@ -27,6 +28,7 @@ export default async function EditarAutomacaoPage({
   if (!automacao) notFound();
 
   const accounts = await prisma.account.findMany({ orderBy: { criadoEm: "asc" } });
+  const mediaByAccount = await fetchMediaByAccount(accounts);
   const resultado = testeResultado ? RESULTADO_TESTE[testeResultado] : null;
 
   return (
@@ -75,6 +77,7 @@ export default async function EditarAutomacaoPage({
         <AutomationForm
           action={updateAutomationAction.bind(null, automacao.id)}
           accounts={accounts}
+          mediaByAccount={mediaByAccount}
           accountLocked
           initial={{
             nome: automacao.nome,

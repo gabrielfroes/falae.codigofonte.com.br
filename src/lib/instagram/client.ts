@@ -72,6 +72,54 @@ export async function sendPublicReply(params: {
   return { externalMessageId: (result.id as string | undefined) ?? null };
 }
 
+export interface InstagramMedia {
+  id: string;
+  caption: string | null;
+  mediaType: string;
+  displayUrl: string;
+  permalink: string;
+  timestamp: string;
+}
+
+interface GraphMediaItem {
+  id: string;
+  caption?: string;
+  media_type: string;
+  media_url?: string;
+  thumbnail_url?: string;
+  permalink: string;
+  timestamp: string;
+}
+
+/**
+ * Últimos posts/reels da conta, para o seletor visual de posts na criação
+ * de automações. Reels/vídeos só têm `thumbnail_url`; imagens usam
+ * `media_url` diretamente.
+ */
+export async function fetchRecentMedia(igAccountId: string, accessToken: string, limit = 24): Promise<InstagramMedia[]> {
+  const params = new URLSearchParams({
+    fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp",
+    limit: String(limit),
+    access_token: accessToken,
+  });
+
+  const response = await fetch(`${GRAPH_API_BASE}/${igAccountId}/media?${params.toString()}`);
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new InstagramApiError(payload.error?.message ?? `Graph API retornou status ${response.status}`, payload);
+  }
+
+  return ((payload.data ?? []) as GraphMediaItem[]).map((item) => ({
+    id: item.id,
+    caption: item.caption ?? null,
+    mediaType: item.media_type,
+    displayUrl: item.thumbnail_url ?? item.media_url ?? "",
+    permalink: item.permalink,
+    timestamp: item.timestamp,
+  }));
+}
+
 /**
  * Classifica o erro da Graph API num motivo legível + status de delivery.
  * Os códigos exatos de erro ainda não foram confirmados contra a API real

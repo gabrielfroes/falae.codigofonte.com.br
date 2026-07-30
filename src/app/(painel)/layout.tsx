@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import styles from "./panel.module.css";
@@ -9,7 +10,15 @@ export default async function PainelLayout({ children }: { children: React.React
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
-        <h2>Falae</h2>
+        <div className={styles.brand}>
+          <Image src="/codigofonte-icon.svg" alt="" width={28} height={28} />
+          <div>
+            <strong>Falae</strong>
+            <span>Código Fonte</span>
+          </div>
+        </div>
+
+        <Link href="/">Dashboard</Link>
         <Link href="/conexoes">Conexões</Link>
         <Link href="/automacoes">Automações</Link>
         <Link href="/atividade">Atividade</Link>

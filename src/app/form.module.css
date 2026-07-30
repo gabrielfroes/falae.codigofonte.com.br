@@ -17,6 +17,11 @@
   padding: 32px;
 }
 
+.logo {
+  display: block;
+  margin-bottom: 16px;
+}
+
 .card h1 {
   font-size: 22px;
   margin-bottom: 8px;

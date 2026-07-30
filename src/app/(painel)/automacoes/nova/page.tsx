@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { fetchMediaByAccount } from "@/lib/instagram/media";
 import styles from "../../panel.module.css";
 import { AutomationForm } from "../AutomationForm";
 import { createAutomationAction } from "../actions";
@@ -10,6 +11,7 @@ export default async function NovaAutomacaoPage({
 }) {
   const { erro } = await searchParams;
   const accounts = await prisma.account.findMany({ orderBy: { criadoEm: "asc" } });
+  const mediaByAccount = await fetchMediaByAccount(accounts);
 
   return (
     <div>
@@ -26,7 +28,7 @@ export default async function NovaAutomacaoPage({
       ) : (
         <div className={styles.card}>
           {erro && <p className={styles.error}>Preencha nome, conta, ao menos uma palavra-chave e a DM completa.</p>}
-          <AutomationForm action={createAutomationAction} accounts={accounts} />
+          <AutomationForm action={createAutomationAction} accounts={accounts} mediaByAccount={mediaByAccount} />
         </div>
       )}
     </div>

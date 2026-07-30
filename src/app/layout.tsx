@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Falae",
-  description: "Automação de comment-to-DM no Instagram para o Código Fonte TV",
+  title: "Falae do Código Fonte",
+  description: "Automação de Comentários e DMs",
+  icons: { icon: "/codigofonte-icon.svg" },
 };
 
 export default function RootLayout({
