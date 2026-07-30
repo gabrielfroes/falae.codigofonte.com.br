@@ -7,7 +7,8 @@ YouTube e Facebook previstos para depois.
 
 Passo a passo de configuração do app na Meta (contas, permissões, webhook):
 [`docs/setup-meta.md`](docs/setup-meta.md). Notas sobre a API oficial da Meta usada
-(versões, endpoints, limites): [`docs/meta-api-notes.md`](docs/meta-api-notes.md).
+(versões, endpoints, limites): [`docs/meta-api-notes.md`](docs/meta-api-notes.md). Como
+gerar as credenciais do login com Google: [`docs/setup-google-auth.md`](docs/setup-google-auth.md).
 
 **Estado atual:** núcleo de automação (webhook, fila, adapter Instagram) e painel
 (conexões, automações, atividade, configurações) implementados. Fluxo de conexão real
@@ -50,17 +51,12 @@ docker compose up postgres redis
 # POSTGRES_HOST_PORT=5433 docker compose up postgres redis
 ```
 
-## Painel — primeiro acesso
+## Painel — login
 
-Não existe cadastro aberto. O primeiro usuário (admin) é criado direto no servidor:
-
-```bash
-pnpm create-admin seuemail@exemplo.com "Seu Nome" "uma senha com 8+ caracteres"
-```
-
-Depois disso, acesse `/login`, entre com esse usuário e convide o resto do time em
-Configurações — o convite ainda não envia email automaticamente, o link aparece na tela
-para você copiar e enviar por onde preferir.
+Não existe cadastro nem senha — o login é feito com Google, e só entra quem estiver na
+lista `AUTH_ALLOWED_EMAILS` do `.env` (o usuário é criado automaticamente no primeiro
+login de um email autorizado). Veja [`docs/setup-google-auth.md`](docs/setup-google-auth.md)
+para gerar `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`.
 
 Para testar o painel com dados de exemplo (uma conta e uma automação fake, sem depender
 da Meta):

@@ -1,5 +1,11 @@
 import styles from "@/app/form.module.css";
-import { loginAction } from "./actions";
+
+const ERROS: Record<string, string> = {
+  nao_autorizado: "Esse email não tem acesso ao painel do Falae.",
+  estado_invalido: "A tentativa de login expirou — tente de novo.",
+  falha_login: "Não foi possível confirmar sua conta Google. Tente de novo.",
+  cancelado: "Login cancelado.",
+};
 
 export default async function LoginPage({
   searchParams,
@@ -12,23 +18,13 @@ export default async function LoginPage({
     <div className={styles.page}>
       <div className={styles.card}>
         <h1>Falae</h1>
-        <p className={styles.subtitle}>Entre com sua conta do painel.</p>
+        <p className={styles.subtitle}>Painel interno do Código Fonte TV.</p>
 
-        {erro && <p className={styles.error}>Email ou senha inválidos.</p>}
+        {erro && <p className={styles.error}>{ERROS[erro] ?? "Não foi possível entrar."}</p>}
 
-        <form action={loginAction}>
-          <div className={styles.formGroup}>
-            <label htmlFor="email">Email</label>
-            <input id="email" name="email" type="email" required autoFocus />
-          </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="senha">Senha</label>
-            <input id="senha" name="senha" type="password" required />
-          </div>
-          <button className={styles.button} type="submit">
-            Entrar
-          </button>
-        </form>
+        <a className={styles.button} href="/api/auth/google/start">
+          Entrar com Google
+        </a>
       </div>
     </div>
   );

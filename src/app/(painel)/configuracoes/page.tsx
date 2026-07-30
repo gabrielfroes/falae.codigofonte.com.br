@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import styles from "../panel.module.css";
-import { createInviteAction } from "./actions";
 
 async function checkWebhookHealth(): Promise<{ ok: boolean; detalhe: string }> {
   const appUrl = process.env.APP_URL ?? "http://localhost:3000";
@@ -22,26 +21,21 @@ async function checkWebhookHealth(): Promise<{ ok: boolean; detalhe: string }> {
   }
 }
 
-const ERROS: Record<string, string> = {
-  email: "Informe um email válido.",
-  existe: "Já existe um usuário com esse email.",
-};
+function emailsPermitidos(): string[] {
+  return (process.env.AUTH_ALLOWED_EMAILS ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
-export default async function ConfiguracoesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ erro?: string; conviteToken?: string }>;
-}) {
-  const { erro, conviteToken } = await searchParams;
-
-  const [users, invites, health] = await Promise.all([
+export default async function ConfiguracoesPage() {
+  const [users, health] = await Promise.all([
     prisma.user.findMany({ orderBy: { criadoEm: "asc" } }),
-    prisma.invite.findMany({ where: { aceitoEm: null }, orderBy: { criadoEm: "desc" } }),
     checkWebhookHealth(),
   ]);
 
   const appUrl = process.env.APP_URL ?? "http://localhost:3000";
-  const conviteLink = conviteToken ? `${appUrl}/convite/${conviteToken}` : null;
+  const permitidos = emailsPermitidos();
 
   return (
     <div>
@@ -62,73 +56,47 @@ export default async function ConfiguracoesPage({
 
       <div className={styles.card}>
         <h2 style={{ fontSize: 16, marginBottom: 12 }}>Usuários do time</h2>
+        <p className={styles.muted}>
+          Login é feito com Google — só os emails abaixo (configurados em{" "}
+          <code>AUTH_ALLOWED_EMAILS</code> no servidor) conseguem entrar. Para adicionar alguém,
+          inclua o email na variável de ambiente e reinicie a aplicação.
+        </p>
+        <ul style={{ marginTop: 8, marginBottom: 16 }}>
+          {permitidos.map((email) => (
+            <li key={email} className={styles.muted}>
+              {email}
+            </li>
+          ))}
+        </ul>
+
         <table className={styles.table}>
           <thead>
             <tr>
               <th>Nome</th>
               <th>Email</th>
               <th>Papel</th>
-              <th>Desde</th>
+              <th>Primeiro login</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.nome}</td>
-                <td>{user.email}</td>
-                <td>{user.role === "admin" ? "Admin" : "Membro"}</td>
-                <td>{user.criadoEm.toLocaleDateString("pt-BR")}</td>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={4} className={styles.emptyState}>
+                  Ninguém logou ainda.
+                </td>
               </tr>
-            ))}
+            ) : (
+              users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.nome}</td>
+                  <td>{user.email}</td>
+                  <td>{user.role === "admin" ? "Admin" : "Membro"}</td>
+                  <td>{user.criadoEm.toLocaleDateString("pt-BR")}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-      </div>
-
-      <div className={styles.card}>
-        <h2 style={{ fontSize: 16, marginBottom: 12 }}>Convidar alguém do time</h2>
-        <p className={styles.muted}>
-          Ainda não enviamos o email automaticamente — depois de criar o convite, copie o link e
-          envie por onde preferir (WhatsApp, etc).
-        </p>
-
-        {erro && <p className={styles.error}>{ERROS[erro] ?? "Não foi possível criar o convite."}</p>}
-        {conviteLink && (
-          <p className={styles.muted} style={{ wordBreak: "break-all" }}>
-            Link do convite: <a href={conviteLink}>{conviteLink}</a>
-          </p>
-        )}
-
-        <form action={createInviteAction} style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <input
-            type="email"
-            name="email"
-            placeholder="email@exemplo.com"
-            required
-            style={{ flex: 1, padding: "8px 10px", border: "1px solid #ccc", borderRadius: 6 }}
-          />
-          <button className={styles.button} type="submit">
-            Gerar convite
-          </button>
-        </form>
-
-        {invites.length > 0 && (
-          <table className={styles.table} style={{ marginTop: 16 }}>
-            <thead>
-              <tr>
-                <th>Email</th>
-                <th>Expira em</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invites.map((invite) => (
-                <tr key={invite.id}>
-                  <td>{invite.email}</td>
-                  <td>{invite.expiraEm.toLocaleDateString("pt-BR")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
       </div>
     </div>
   );

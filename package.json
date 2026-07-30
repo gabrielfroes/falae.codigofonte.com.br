@@ -13,15 +13,13 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
-    "simulate:webhook": "tsx --env-file=.env scripts/simulate-webhook.ts",
-    "create-admin": "tsx --env-file=.env scripts/create-admin.ts"
+    "simulate:webhook": "tsx --env-file=.env scripts/simulate-webhook.ts"
   },
   "prisma": {
     "seed": "tsx --env-file=.env prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6",
-    "bcryptjs": "^2",
     "bullmq": "^5",
     "ioredis": "^5",
     "next": "16.2.12",
@@ -29,7 +27,6 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

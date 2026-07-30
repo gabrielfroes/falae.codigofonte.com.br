@@ -48,7 +48,11 @@
 }
 
 .button {
+  display: block;
   width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
   background: #111;
   color: #fff;
   border: none;
