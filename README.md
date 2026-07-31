@@ -9,6 +9,7 @@ Passo a passo de configuração do app na Meta (contas, permissões, webhook):
 [`docs/setup-meta.md`](docs/setup-meta.md). Notas sobre a API oficial da Meta usada
 (versões, endpoints, limites): [`docs/meta-api-notes.md`](docs/meta-api-notes.md). Como
 gerar as credenciais do login com Google: [`docs/setup-google-auth.md`](docs/setup-google-auth.md).
+Deploy em produção via Dokploy: [`docs/deploy-dokploy.md`](docs/deploy-dokploy.md).
 
 **Estado atual:** núcleo de automação (webhook, fila, adapter Instagram), painel
 (dashboard, conexões, automações, atividade, configurações) e robustez (retry com
@@ -103,6 +104,11 @@ como URL do webhook no app da Meta (veja `docs/setup-meta.md`).
 
 ## Deploy (produção)
 
+Duas formas de subir em produção, dependendo de onde:
+
+**VPS próprio, tudo num compose só** (`docker-compose.yml`, com Postgres, Redis e Caddy
+inclusos):
+
 ```bash
 cp .env.example .env
 # preencha .env com os valores reais de produção
@@ -112,3 +118,8 @@ docker compose up -d --build
 
 O Caddy cuida do certificado TLS automaticamente para `falae.codigofonte.com.br` — o
 DNS do domínio precisa já apontar para o IP do VPS antes de subir.
+
+**Dokploy, com Postgres e Redis como serviços separados** (`docker-compose.dokploy.yml`,
+sem Postgres/Redis/Caddy — usa os serviços de banco do Dokploy e o Traefik embutido
+dele para domínio/HTTPS): veja o passo a passo em
+[`docs/deploy-dokploy.md`](docs/deploy-dokploy.md).
