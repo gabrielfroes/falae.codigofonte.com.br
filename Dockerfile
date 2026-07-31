@@ -1,5 +1,7 @@
-# Imagem única usada pelos serviços "app" e "worker" do docker-compose —
-# eles rodam o mesmo build, só com CMD diferente (ver docker-compose.yml).
+# Imagem única para os processos "app" e "worker" — mesmo build, só muda o
+# comando na hora de rodar. Localmente via docker-compose.yml (serviços com
+# CMD diferente); no Dokploy via duas Applications com Start Command
+# diferente, ambas com Build Type Dockerfile (ver docs/deploy-dokploy.md).
 
 FROM node:20-alpine AS base
 RUN corepack enable

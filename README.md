@@ -119,7 +119,6 @@ docker compose up -d --build
 O Caddy cuida do certificado TLS automaticamente para `falae.codigofonte.com.br` — o
 DNS do domínio precisa já apontar para o IP do VPS antes de subir.
 
-**Dokploy, com Postgres e Redis como serviços separados** (`docker-compose.dokploy.yml`,
-sem Postgres/Redis/Caddy — usa os serviços de banco do Dokploy e o Traefik embutido
-dele para domínio/HTTPS): veja o passo a passo em
+**Dokploy** (Build Type Dockerfile, Postgres/Redis como serviços separados no Dokploy,
+domínio/HTTPS pelo Traefik embutido dele): veja o passo a passo em
 [`docs/deploy-dokploy.md`](docs/deploy-dokploy.md).
