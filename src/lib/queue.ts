@@ -7,6 +7,7 @@ export const redisConnection = new Redis(process.env.REDIS_URL ?? "redis://local
 
 export const COMMENT_EVENTS_QUEUE = "comment-events";
 export const ACTIONS_QUEUE = "actions";
+export const TOKEN_REFRESH_QUEUE = "token-refresh";
 
 export interface CommentEventJobData {
   accountExternalId: string;
@@ -25,6 +26,10 @@ export interface ActionJobData {
 
 export const commentEventsQueue = new Queue<CommentEventJobData>(COMMENT_EVENTS_QUEUE, {
   connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: "exponential", delay: 2_000 },
+  },
 });
 
 export const actionsQueue = new Queue<ActionJobData>(ACTIONS_QUEUE, {
@@ -33,4 +38,8 @@ export const actionsQueue = new Queue<ActionJobData>(ACTIONS_QUEUE, {
     attempts: 5,
     backoff: { type: "exponential", delay: 5_000 },
   },
+});
+
+export const tokenRefreshQueue = new Queue(TOKEN_REFRESH_QUEUE, {
+  connection: redisConnection,
 });

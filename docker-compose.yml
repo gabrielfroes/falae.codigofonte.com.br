@@ -28,14 +28,23 @@ services:
     volumes:
       - redis_data:/data
 
+  migrate:
+    build: .
+    command: ["pnpm", "db:migrate"]
+    env_file: .env
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   app:
     build: .
     restart: unless-stopped
     command: ["pnpm", "start"]
     env_file: .env
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_started
 
@@ -45,8 +54,8 @@ services:
     command: ["pnpm", "worker"]
     env_file: .env
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_started
 

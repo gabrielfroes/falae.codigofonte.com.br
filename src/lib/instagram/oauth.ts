@@ -64,6 +64,23 @@ export async function exchangeForLongLivedToken(
   return { accessToken: payload.access_token, expiresInSeconds: payload.expires_in };
 }
 
+/**
+ * Renova um token de longa duração antes que expire (janela de 60 dias).
+ * Precisa ser chamado com um token ainda válido — não funciona depois que
+ * já expirou (nesse caso a única saída é o usuário reconectar a conta).
+ */
+export async function refreshLongLivedToken(
+  accessToken: string,
+): Promise<{ accessToken: string; expiresInSeconds: number }> {
+  const params = new URLSearchParams({ grant_type: "ig_refresh_token", access_token: accessToken });
+  const response = await fetch(`https://graph.instagram.com/refresh_access_token?${params.toString()}`);
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error?.message ?? "Falha ao renovar o token de acesso");
+  }
+  return { accessToken: payload.access_token, expiresInSeconds: payload.expires_in };
+}
+
 export async function fetchAccountProfile(accessToken: string): Promise<{ id: string; username: string }> {
   const params = new URLSearchParams({ fields: "id,username", access_token: accessToken });
   const response = await fetch(`https://graph.instagram.com/me?${params.toString()}`);

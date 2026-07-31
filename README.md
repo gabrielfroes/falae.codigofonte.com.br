@@ -10,11 +10,13 @@ Passo a passo de configuração do app na Meta (contas, permissões, webhook):
 (versões, endpoints, limites): [`docs/meta-api-notes.md`](docs/meta-api-notes.md). Como
 gerar as credenciais do login com Google: [`docs/setup-google-auth.md`](docs/setup-google-auth.md).
 
-**Estado atual:** núcleo de automação (webhook, fila, adapter Instagram) e painel
-(conexões, automações, atividade, configurações) implementados. Fluxo de conexão real
-com o Instagram ainda depende de credenciais reais do app na Meta (veja
-`docs/setup-meta.md`) — sem elas, a automação roda ponta a ponta localmente, mas o envio
-de mensagens de verdade falha (esperado, ver `scripts/simulate-webhook.ts`).
+**Estado atual:** núcleo de automação (webhook, fila, adapter Instagram), painel
+(dashboard, conexões, automações, atividade, configurações) e robustez (retry com
+backoff exponencial, idempotência entre tentativas, renovação automática de token)
+implementados. Fluxo de conexão real com o Instagram ainda depende de credenciais reais
+do app na Meta (veja `docs/setup-meta.md`) — sem elas, a automação roda ponta a ponta
+localmente, mas o envio de mensagens de verdade falha (esperado, ver
+`scripts/simulate-webhook.ts`).
 
 ## Stack
 
@@ -64,6 +66,18 @@ da Meta):
 ```bash
 pnpm db:seed
 ```
+
+## Testes automatizados
+
+```bash
+pnpm test        # roda uma vez
+pnpm test:watch  # modo watch
+```
+
+Cobre os caminhos críticos: matching de palavras-chave (acento/emoji/exato/contém),
+verificação de assinatura do webhook, allowlist de login, e idempotência do
+processamento de comentários (reentrega do mesmo `comment_id` não duplica nem
+reenfileira ação).
 
 ## Testando webhooks da Meta localmente
 
