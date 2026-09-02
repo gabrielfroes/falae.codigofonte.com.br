@@ -2,23 +2,24 @@
   "name": "falae",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "worker": "tsx --env-file=.env src/worker.ts",
+    "worker": "tsx --env-file-if-exists=.env src/worker.ts",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:seed": "tsx --env-file=.env prisma/seed.ts",
-    "simulate:webhook": "tsx --env-file=.env scripts/simulate-webhook.ts",
+    "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
+    "simulate:webhook": "tsx --env-file-if-exists=.env scripts/simulate-webhook.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "prisma": {
-    "seed": "tsx --env-file=.env prisma/seed.ts"
+    "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6",
