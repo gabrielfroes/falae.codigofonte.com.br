@@ -14,10 +14,12 @@ Deploy em produção via Dokploy: [`docs/deploy-dokploy.md`](docs/deploy-dokploy
 **Estado atual:** núcleo de automação (webhook, fila, adapter Instagram), painel
 (dashboard, conexões, automações, atividade, configurações) e robustez (retry com
 backoff exponencial, idempotência entre tentativas, renovação automática de token)
-implementados. Fluxo de conexão real com o Instagram ainda depende de credenciais reais
-do app na Meta (veja `docs/setup-meta.md`) — sem elas, a automação roda ponta a ponta
-localmente, mas o envio de mensagens de verdade falha (esperado, ver
-`scripts/simulate-webhook.ts`).
+implementados e testados em produção — conectar conta, enviar DM, resposta pública e
+listar posts todos funcionando. **Falta um passo não-técnico**: comentários de
+seguidores reais só disparam a automação depois que o app da Meta passar por App Review
+e for pra modo Live (veja `docs/setup-meta.md`, seção 9) — enquanto isso, dá pra validar
+o fluxo inteiro com o botão "Test" do webhook no painel da Meta ou com
+`scripts/simulate-webhook.ts`.
 
 ## Stack
 

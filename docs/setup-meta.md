@@ -91,13 +91,33 @@ permissões — é esperado, faz parte do fluxo "Instagram Login":
 - `instagram_business_manage_comments` (necessária para ler comentários e responder
   publicamente)
 
-## 9. (Só no futuro, se o Falae passar a atender outros canais)
+## 9. App Review — necessário mesmo só automatizando a própria conta
 
-Enquanto o Falae só automatiza a própria conta do canal (via "Instagram tester"), **não
-é necessário** submeter o app para App Review nem para Verificação Empresarial da Meta.
-Isso só passa a ser obrigatório se um dia o Falae precisar operar em contas de terceiros
-("Advanced Access"). Quando chegar essa hora, revise `docs/meta-api-notes.md` antes de
-iniciar o processo, porque os requisitos da Meta mudam com frequência.
+**Correção importante**: diferente do que este guia dizia antes, o App Review **é
+necessário**, mesmo o Falae operando só na própria conta do canal. Confirmado testando
+em produção: com o app em modo Development, o botão "Test" do webhook no painel da Meta
+funciona normalmente, mas um **comentário real de um seguidor não dispara nada** — a
+Meta só entrega webhook de interações feitas por contas que são testadoras/admins/
+desenvolvedoras do próprio app. Como o público do canal não tem (nem deveria ter) papel
+nenhum no app da Meta, o Falae não funciona de verdade em produção até o app estar em
+modo **Live**, o que exige passar pelo App Review.
+
+O que isso envolve (o processo pode mudar — confirme na documentação atual antes de
+começar):
+
+1. **Verificação Empresarial** (Business Verification) — documentos legais da empresa/MEI
+   dona do canal.
+2. Uma **Política de Privacidade** publicada (URL pública) e uma **URL de exclusão de
+   dados** (Data Deletion) funcionando.
+3. Um **vídeo de tela** mostrando o fluxo completo: conectar a conta pelo painel do
+   Falae, um comentário disparando a resposta pública + DM.
+4. Submeter pra revisão pedindo as permissões `instagram_business_manage_comments` e
+   `instagram_business_manage_messages`. A Meta leva de 2 a 4 semanas pra revisar.
+
+Enquanto isso não acontece, dá pra continuar testando o fluxo inteiro usando o botão
+"Test" do webhook no painel da Meta (simula um comentário) ou o
+`scripts/simulate-webhook.ts` do repositório — só não vai funcionar com comentários
+reais de seguidores até o app estar Live.
 
 ## Checklist rápido
 
@@ -108,3 +128,4 @@ iniciar o processo, porque os requisitos da Meta mudam com frequência.
 - [ ] Redirect URI do OAuth cadastrado: `https://falae.codigofonte.com.br/api/auth/instagram/callback`
 - [ ] Webhook cadastrado: `https://falae.codigofonte.com.br/api/webhooks/instagram`, campo `comments` marcado
 - [ ] **Instagram** App ID, Instagram App Secret (não o App ID/Secret geral da Meta) e Verify Token salvos no `.env` do servidor (nunca no código)
+- [ ] App submetido para App Review e aprovado (modo Live) — sem isso, comentários reais de seguidores não disparam nada, só o botão "Test" do webhook funciona

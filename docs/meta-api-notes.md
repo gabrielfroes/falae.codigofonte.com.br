@@ -111,13 +111,23 @@ painel se a renovação falhar (token realmente expirado → conta cai para stat
 
 ## App Review
 
-- Sem App Review: o app em modo **Development** funciona normalmente para contas
-  adicionadas como **"Instagram tester"** — suficiente para o MVP, já que é a própria
-  conta do canal.
-- **App Review + Business Verification** só são obrigatórios para **Advanced Access**
-  no sentido de gerenciar contas de terceiros que não são do desenvolvedor/testers do
-  app. Não é o caso do Falae hoje. Vira relevante na "fase futura" caso o Falae passe a
-  atender outros canais.
+**Correção (confirmado testando em produção — a nota anterior aqui estava errada):**
+App Review **é necessário mesmo só operando a própria conta do canal**. A distinção
+não é "conta própria vs. conta de terceiro" — é **quem gera a interação**:
+
+- Em modo **Development**, o app consegue gerenciar normalmente uma conta adicionada
+  como "Instagram tester" (ler dados, enviar mensagens via chamada direta da API) — isso
+  já funciona sem App Review.
+- Mas **o webhook só dispara para interações feitas por contas que são
+  testadoras/admins/desenvolvedoras do próprio app**. Um comentário de um seguidor
+  qualquer (que não tem nenhum papel no app) **não gera webhook** enquanto o app estiver
+  em Development — confirmado testando: o botão "Test" do painel de Webhooks da Meta
+  funciona (ele simula a ação como se fosse de um admin), um comentário real de um
+  seguidor não dispara nada.
+- Como o público do canal nunca vai ter papel no app da Meta, o Falae **precisa** do app
+  em modo **Live** pra funcionar de verdade — o que exige App Review (permissões
+  `instagram_business_manage_comments` e `instagram_business_manage_messages`) e
+  Business Verification. Ver `docs/setup-meta.md`, seção 9, pro processo.
 
 ## Pontos em aberto para reconfirmar antes de implementar (Fase 1)
 
