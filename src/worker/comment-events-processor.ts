@@ -14,7 +14,10 @@ export async function processCommentEvent(job: Job<CommentEventJobData>): Promis
   });
 
   if (!account) {
-    console.warn(`[comment-events] conta desconhecida (external_id=${accountExternalId}), ignorando`);
+    console.warn(
+      `[comment-events] conta desconhecida (external_id=${accountExternalId}), ignorando. Payload cru:`,
+      JSON.stringify(raw),
+    );
     return;
   }
 

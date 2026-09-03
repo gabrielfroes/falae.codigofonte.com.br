@@ -39,10 +39,27 @@ export async function POST(request: NextRequest) {
     return new Response("Bad request", { status: 400 });
   }
 
+  // Log do payload bruto — o formato exato ainda não foi 100% confirmado
+  // contra entregas reais (ver docs/meta-api-notes.md). Barato de manter e
+  // já foi o que revelou o bug do "external_id=0".
+  console.log("[webhook/instagram] payload recebido:", JSON.stringify(payload));
+
   for (const entry of payload.entry ?? []) {
     for (const change of entry.changes ?? []) {
       if (change.field !== "comments") continue;
       const value = change.value;
+
+      // Formato ainda não 100% confirmado contra entregas reais — se algum
+      // campo esperado não vier, loga e pula esse item em vez de derrubar a
+      // requisição inteira (Meta reentrega em cima de erro 500).
+      if (!entry.id || !value?.id || !value.media?.id || !value.from?.id) {
+        console.warn("[webhook/instagram] payload de comentário com formato inesperado, ignorando", {
+          entryId: entry.id,
+          change,
+        });
+        continue;
+      }
+
       await commentEventsQueue.add(
         "process-comment",
         {
