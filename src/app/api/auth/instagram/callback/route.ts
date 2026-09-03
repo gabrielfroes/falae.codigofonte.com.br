@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { encryptToken } from "@/lib/crypto";
 import { prisma } from "@/lib/prisma";
+import { subscribeAccountToWebhooks } from "@/lib/instagram/client";
 import {
   exchangeCodeForShortLivedToken,
   exchangeForLongLivedToken,
@@ -54,6 +55,11 @@ export async function GET(request: NextRequest) {
         status: "conectado",
       },
     });
+
+    // Sem isso, o webhook fica configurado certinho no App Dashboard e a
+    // Meta simplesmente nunca entrega nada pra essa conta — descoberto
+    // testando em produção. Ver o comentário em subscribeAccountToWebhooks.
+    await subscribeAccountToWebhooks(profile.id, longLivedToken);
   } catch (error) {
     console.error("[auth/instagram/callback] falha ao conectar conta:", error);
     redirect("/conexoes?erro=falha_conexao");

@@ -79,6 +79,29 @@ export async function sendPublicReply(params: {
   return { externalMessageId: (result.id as string | undefined) ?? null };
 }
 
+/**
+ * Ativa a entrega de webhooks pra essa conta. Configurar o webhook no App
+ * Dashboard (docs/setup-meta.md) é necessário mas **não é suficiente** — no
+ * fluxo "Instagram Login", cada conta conectada precisa dessa chamada
+ * depois do OAuth pra a Meta começar a mandar eventos pra ela. Sem isso, o
+ * webhook fica configurado certinho e a Meta simplesmente nunca entrega
+ * nada, sem erro nenhum (foi o que aconteceu no primeiro teste em
+ * produção). Chamado automaticamente ao conectar/reconectar uma conta —
+ * ver src/app/api/auth/instagram/callback/route.ts.
+ */
+export async function subscribeAccountToWebhooks(igAccountId: string, accessToken: string): Promise<void> {
+  const url = `${GRAPH_API_BASE}/${igAccountId}/subscribed_apps`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ subscribed_fields: "comments", access_token: accessToken }),
+  });
+  const payload = (await response.json().catch(() => ({}))) as GraphErrorBody & Record<string, unknown>;
+  if (!response.ok) {
+    throw new InstagramApiError(payload.error?.message ?? `Graph API retornou status ${response.status}`, payload);
+  }
+}
+
 export interface InstagramMedia {
   id: string;
   caption: string | null;

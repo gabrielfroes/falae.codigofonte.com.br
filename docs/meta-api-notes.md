@@ -65,6 +65,15 @@ painel se a renovação falhar (token realmente expirado → conta cai para stat
 - **Campo `comments`**: dispara em novos comentários em mídia (post/reel) da conta
   conectada. Requer Advanced Access na permissão de comentários correspondente ao
   caminho de auth escolhido.
+- **Configurar o webhook no App Dashboard não é suficiente** (achado testando em
+  produção — nenhum evento chegava, sem erro nenhum, nem no app nem no painel de
+  Webhooks da Meta). No fluxo "Instagram Login", cada conta conectada precisa de uma
+  chamada extra depois do OAuth pra ativar a entrega pra ela especificamente:
+  `POST /<IG_ID>/subscribed_apps` com `subscribed_fields=comments` e o access token da
+  própria conta. O Falae faz essa chamada automaticamente ao conectar/reconectar
+  (`subscribeAccountToWebhooks` em `src/lib/instagram/client.ts`, chamado pelo callback
+  do OAuth) — contas conectadas antes dessa correção precisam reconectar (botão
+  "Reconectar" em Conexões) pra a chamada rodar.
 - Responder **200 rapidamente** e delegar o processamento pesado para a fila — a Meta
   reenvia webhooks que demoram demais ou falham, o que é outra fonte de duplicidade além
   da reentrega natural (reforça a necessidade da idempotência via
