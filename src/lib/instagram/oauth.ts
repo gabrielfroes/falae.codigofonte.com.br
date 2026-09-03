@@ -1,7 +1,9 @@
 // Fluxo OAuth "Instagram Login" (Business Login for Instagram) — ver
-// docs/meta-api-notes.md. Não foi testado contra a API real ainda (precisa
-// de META_APP_ID/META_APP_SECRET reais); reconfirme os endpoints abaixo
-// contra a documentação atual antes de usar em produção.
+// docs/meta-api-notes.md. META_APP_ID/META_APP_SECRET aqui precisam ser o
+// "Instagram App ID"/"Instagram App Secret" (produto Instagram → API setup
+// with Instagram login), NÃO o App ID/Secret geral da Meta que aparece em
+// Configurações do App → Básico — usar o geral aqui dá "Invalid platform
+// app" na tela de autorização. Ver docs/setup-meta.md.
 
 const SCOPES = [
   "instagram_business_basic",
@@ -22,7 +24,10 @@ export function buildAuthorizationUrl(state: string): string {
     scope: SCOPES,
     state,
   });
-  return `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+  // api.instagram.com, não www.instagram.com — o host errado é o que gera
+  // "Invalid platform app" na tela de autorização (confirmado testando em
+  // produção). Ver docs/meta-api-notes.md.
+  return `https://api.instagram.com/oauth/authorize?${params.toString()}`;
 }
 
 export async function exchangeCodeForShortLivedToken(

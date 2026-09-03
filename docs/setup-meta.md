@@ -46,9 +46,11 @@ já que vamos usar só a própria conta do canal.
 
 ## 5. Configurar a URL de redirecionamento do OAuth
 
-1. Nas configurações do produto Instagram (ou em **Configurações do App** → **Básico**),
-   procure o campo de **Redirect URI** / **URI de redirecionamento OAuth**.
-2. Cadastre exatamente: `https://falae.codigofonte.com.br/api/auth/instagram/callback`
+1. No menu lateral, expanda **Instagram** e clique em **"API setup with Instagram
+   login"** (Configuração da API com login do Instagram) — é uma página separada das
+   Configurações gerais do App, específica do produto Instagram.
+2. Procure o campo de **Redirect URI** / **URI de redirecionamento OAuth** nessa página
+   e cadastre exatamente: `https://falae.codigofonte.com.br/api/auth/instagram/callback`
 3. Salvar.
 
 ## 6. Configurar o webhook
@@ -65,11 +67,16 @@ já que vamos usar só a própria conta do canal.
 5. Na lista de campos do webhook, marque **`comments`** para receber notificações de
    novos comentários.
 
-## 7. Anotar App ID e App Secret
+## 7. Anotar o Instagram App ID e o Instagram App Secret
 
-1. Em **Configurações do App** → **Básico**, copie o **ID do aplicativo** e o **Chave
-   secreta do aplicativo** (App Secret — pode pedir para confirmar sua senha do
-   Facebook para revelar).
+**Atenção — é o valor errado que mais gera erro nesse passo.** Não use o "ID do
+aplicativo" geral que aparece em **Configurações do App → Básico** — esse é o App ID da
+Meta, não o do Instagram, e usá-lo aqui faz o app cair numa tela de erro "Invalid
+platform app" na hora de conectar.
+
+1. Na mesma página do passo anterior (**Instagram → API setup with Instagram login**),
+   procure os campos **Instagram app ID** e **Instagram app secret** (pode pedir para
+   confirmar sua senha do Facebook para revelar o secret).
 2. **Nunca** cole esses valores em nenhum arquivo do repositório de código. Eles vão
    direto nas variáveis de ambiente do servidor (`META_APP_ID`, `META_APP_SECRET` no
    `.env` — veja `.env.example`), que não é versionado no Git.
@@ -100,4 +107,4 @@ iniciar o processo, porque os requisitos da Meta mudam com frequência.
 - [ ] Conta do canal adicionada e aceita como testadora
 - [ ] Redirect URI do OAuth cadastrado: `https://falae.codigofonte.com.br/api/auth/instagram/callback`
 - [ ] Webhook cadastrado: `https://falae.codigofonte.com.br/api/webhooks/instagram`, campo `comments` marcado
-- [ ] App ID, App Secret e Verify Token salvos no `.env` do servidor (nunca no código)
+- [ ] **Instagram** App ID, Instagram App Secret (não o App ID/Secret geral da Meta) e Verify Token salvos no `.env` do servidor (nunca no código)

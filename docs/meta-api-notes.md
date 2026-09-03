@@ -36,6 +36,17 @@ conta esteja vinculada a uma Página do Facebook (mais simples para o canal).
 5. Trocar o token de curta duração por um **token de longa duração**, válido por
    **60 dias**, renovável antes de expirar.
 
+**Dois detalhes que já nos morderam em produção, confirmados testando de verdade:**
+
+- O endpoint de autorização do fluxo "Instagram Login" é
+  `https://api.instagram.com/oauth/authorize` — **não** `www.instagram.com`. Usar
+  `www.instagram.com` redireciona pra uma tela de erro genérica "Invalid platform app"
+  em vez do consentimento normal.
+- `client_id`/`client_secret` nesse fluxo são o **Instagram App ID** / **Instagram App
+  Secret**, mostrados na página do produto Instagram → "API setup with Instagram
+  login" — **não** o App ID/Secret geral que aparece em Configurações do App → Básico.
+  Usar o geral também produz "Invalid platform app". Ver `docs/setup-meta.md` passo 7.
+
 Implicação prática: precisamos de um job periódico que verifique
 `token_expires_at` de cada `Account` e renove tokens perto de expirar, alertando no
 painel se a renovação falhar (token realmente expirado → conta cai para status
