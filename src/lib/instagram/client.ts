@@ -1,8 +1,15 @@
 // Cliente fino sobre a Graph API para as duas ações que o Falae dispara.
 // Ver docs/meta-api-notes.md para o racional de cada endpoint/limite.
-
+//
+// graph.instagram.com, não graph.facebook.com — tokens emitidos pelo fluxo
+// "Instagram Login" (o que usamos, ver src/lib/instagram/oauth.ts) só
+// funcionam contra graph.instagram.com. graph.facebook.com é pro fluxo
+// "Facebook Login for Business" (conta vinculada a uma Página), que não é
+// o nosso caso. Usar o host errado aqui fazia "conectar" funcionar (isso
+// usa api.instagram.com) mas toda chamada posterior — enviar DM, resposta
+// pública, listar posts — falhar silenciosamente.
 const GRAPH_API_VERSION = process.env.GRAPH_API_VERSION ?? "v23.0";
-const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
+const GRAPH_API_BASE = `https://graph.instagram.com/${GRAPH_API_VERSION}`;
 
 export class InstagramApiError extends Error {
   constructor(

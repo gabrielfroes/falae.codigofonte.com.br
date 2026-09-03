@@ -72,6 +72,12 @@ painel se a renovação falhar (token realmente expirado → conta cai para stat
 
 ## Private Reply (DM em resposta a um comentário)
 
+- **Host**: `graph.instagram.com` — confirmado testando em produção que
+  `graph.facebook.com` (o host "clássico" da Graph API, usado no fluxo Facebook
+  Login for Business) não funciona com tokens do fluxo "Instagram Login" que
+  usamos. A chamada falha e nada é enviado, sem erro óbvio até você olhar o log.
+  Vale pra `/messages`, `/replies` e `/media` (listagem de posts) — todo o
+  client em `src/lib/instagram/client.ts` usa esse host.
 - Endpoint: `POST /<IG_ID>/messages`
 - Corpo: `{ "recipient": { "comment_id": "<id-do-comentario>" }, "message": { "text": "..." } }`
 - **Janela de 7 dias**: só é possível enviar dentro de 7 dias a partir do comentário.
