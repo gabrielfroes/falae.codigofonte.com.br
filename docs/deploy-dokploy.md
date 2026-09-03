@@ -67,7 +67,11 @@ paralelo (usa lock no banco e só aplica o que estiver pendente).
 5. **Environment**: exatamente as mesmas variáveis da Application do app (`DATABASE_URL`,
    `REDIS_URL`, `TOKEN_ENCRYPTION_KEY`, etc. — o worker precisa delas pra decifrar
    tokens e falar com a Graph API).
-6. Deploy.
+6. Deploy — **e confirme que ficou rodando** (status "running"/verde na UI, não só
+   "criada"). É comum criar a Application e esquecer de dar o primeiro deploy/start
+   nela — nesse caso o app funciona normal (webhook responde 200, enfileira o job), mas
+   ninguém processa a fila: comentário recebido não vira DM, sem erro nenhum aparecer em
+   lugar nenhum (o log de erro estaria no worker, que nunca chegou a rodar).
 
 ## Se o login com Google falhar com "Bad Request"
 
@@ -83,11 +87,26 @@ Normalmente é um dos dois:
 Os logs da Application do app (`console.error` no `[auth/google/callback]`) mostram o
 status HTTP e o corpo da resposta do Google — use isso pra confirmar qual dos dois é.
 
+## Se uma automação não dispara nada (sem erro visível em lugar nenhum)
+
+O sintoma "criei a automação, comentei, e nada aconteceu — sem erro no log do app"
+normalmente é a Application do **worker** não estar rodando (criada mas nunca
+deployada/iniciada, ou caiu e não reiniciou). O app sozinho só recebe o webhook e
+enfileira o job no Redis; quem faz o match de palavra-chave e manda a DM é o worker.
+Confira:
+
+1. Na UI do Dokploy, o status da Application "falae-worker" está "running"?
+2. No log dela, tem a linha `[worker] rodando, aguardando jobs em comment-events,
+   actions e token-refresh`? Se o log estiver vazio ou não existir, a Application nunca
+   rodou de verdade.
+3. Depois de confirmar que o worker está rodando, teste de novo — comentários antigos
+   não reprocessam sozinhos, comente de novo ou use o botão "Testar" na automação.
+
 ## Checklist rápido
 
 - [ ] Postgres e Redis criados como serviços separados no Dokploy
-- [ ] Application "falae-app": Build Type Dockerfile, Start Command em branco (usa `pnpm start` do Dockerfile), porta 3000, domínio configurado
-- [ ] Application "falae-worker": Build Type Dockerfile, Start Command `pnpm worker`, sem domínio
+- [ ] Application "falae-app": Build Type Dockerfile, Start Command em branco (usa `pnpm start` do Dockerfile), porta 3000, domínio configurado, **rodando**
+- [ ] Application "falae-worker": Build Type Dockerfile, Start Command `pnpm worker`, sem domínio, **rodando** (confira o log, não só que foi criada)
 - [ ] `APP_URL` exatamente igual ao domínio configurado (`https://falae.codigofonte.com.br`, sem barra no final)
 - [ ] Redirect URI cadastrada no Google Cloud Console e no app da Meta
 - [ ] As duas Applications com o mesmo `.env`

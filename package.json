@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "prisma migrate deploy && next start",
     "lint": "eslint",
-    "worker": "tsx --env-file-if-exists=.env src/worker.ts",
+    "worker": "prisma migrate deploy && tsx --env-file-if-exists=.env src/worker.ts",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
