@@ -13,10 +13,13 @@ Com Build Type Dockerfile, cada Application do Dokploy roda **um container** a p
 da imagem gerada pelo `Dockerfile` deste repo. O Falae precisa de dois processos de
 longa duração — o servidor web (`pnpm start`) e o worker da fila (`pnpm worker`) — então
 são **duas Applications separadas**, ambas apontando pro mesmo repositório/Dockerfile,
-só com o **Start Command** diferente. Não existe uma terceira Application só pra
-migration: cada uma roda `pnpm db:migrate` antes do processo principal, no próprio Start
-Command (`prisma migrate deploy` é seguro de rodar mais de uma vez / em paralelo — ele
-usa um lock no banco e só aplica o que estiver pendente).
+só com o **Start Command** diferente.
+
+Migration não precisa de uma terceira Application nem de Start Command especial: o
+`ENTRYPOINT` da imagem roda `prisma migrate deploy` automaticamente antes de qualquer
+comando (`pnpm start`, `pnpm worker` ou qualquer outro), então acontece sozinho nas duas
+Applications, sempre que o container sobe. `prisma migrate deploy` é seguro de rodar em
+paralelo (usa lock no banco e só aplica o que estiver pendente).
 
 ## 1. Criar o Postgres no Dokploy
 
@@ -37,12 +40,15 @@ usa um lock no banco e só aplica o que estiver pendente).
 2. **Source**: aponte pro repositório e branch (`main`).
 3. **Build Type**: `Dockerfile` (o Dokploy detecta o `Dockerfile` na raiz do repo
    automaticamente).
-4. **Start Command** (em Advanced/General, sobrescreve o `CMD` do Dockerfile):
-   `sh -c "pnpm db:migrate && pnpm start"`
+4. **Start Command**: deixe em branco (usa o `CMD` padrão do Dockerfile, `pnpm start`)
+   — não precisa configurar nada aqui.
 5. **Port**: `3000` (a porta que o Next.js expõe dentro do container).
 6. **Environment**: cole o `.env` de produção (baseado em `.env.example`), com:
    - `DATABASE_URL` e `REDIS_URL` apontando pros serviços dos passos 1 e 2;
-   - `APP_URL=https://falae.codigofonte.com.br`;
+   - `APP_URL=https://falae.codigofonte.com.br` — **exatamente** essa URL, com HTTPS e
+     sem barra no final, porque é a partir dela que o app monta o redirect URI do
+     OAuth do Google e do Instagram; se não bater com o que está cadastrado no Google
+     Cloud Console / Meta, o login/conexão falha com "Bad Request";
    - as demais variáveis (`TOKEN_ENCRYPTION_KEY`, `GOOGLE_CLIENT_ID`/`SECRET`,
      `AUTH_ALLOWED_EMAILS`, `META_APP_ID`/`SECRET`, `META_WEBHOOK_VERIFY_TOKEN`,
      `GRAPH_API_VERSION`) — ver `docs/setup-meta.md` e `docs/setup-google-auth.md`.
@@ -56,16 +62,32 @@ usa um lock no banco e só aplica o que estiver pendente).
 
 1. **Create Service** → **Application**, apontando pro **mesmo repositório**.
 2. **Build Type**: `Dockerfile`.
-3. **Start Command**: `sh -c "pnpm db:migrate && pnpm worker"`
+3. **Start Command**: `pnpm worker`
 4. **Port**: nenhuma — o worker não serve HTTP, não precisa de domínio.
 5. **Environment**: exatamente as mesmas variáveis da Application do app (`DATABASE_URL`,
    `REDIS_URL`, `TOKEN_ENCRYPTION_KEY`, etc. — o worker precisa delas pra decifrar
    tokens e falar com a Graph API).
 6. Deploy.
 
+## Se o login com Google falhar com "Bad Request"
+
+Normalmente é um dos dois:
+
+- `APP_URL` não está exatamente igual ao domínio configurado no Dokploy (com `https://`,
+  sem barra no final) — o redirect URI enviado ao Google não bate com o que foi
+  cadastrado.
+- A redirect URI `https://falae.codigofonte.com.br/api/auth/google/callback` não está
+  cadastrada nas **URIs de redirecionamento autorizados** do Client ID OAuth no Google
+  Cloud Console (ver `docs/setup-google-auth.md`, passo 3).
+
+Os logs da Application do app (`console.error` no `[auth/google/callback]`) mostram o
+status HTTP e o corpo da resposta do Google — use isso pra confirmar qual dos dois é.
+
 ## Checklist rápido
 
 - [ ] Postgres e Redis criados como serviços separados no Dokploy
-- [ ] Application "falae-app": Build Type Dockerfile, Start Command com `db:migrate && start`, porta 3000, domínio configurado
-- [ ] Application "falae-worker": Build Type Dockerfile, Start Command com `db:migrate && worker`, sem domínio
-- [ ] As duas Applications com o mesmo `.env` (exceto se você quiser nomes diferentes de serviço, mas os valores são os mesmos)
+- [ ] Application "falae-app": Build Type Dockerfile, Start Command em branco (usa `pnpm start` do Dockerfile), porta 3000, domínio configurado
+- [ ] Application "falae-worker": Build Type Dockerfile, Start Command `pnpm worker`, sem domínio
+- [ ] `APP_URL` exatamente igual ao domínio configurado (`https://falae.codigofonte.com.br`, sem barra no final)
+- [ ] Redirect URI cadastrada no Google Cloud Console e no app da Meta
+- [ ] As duas Applications com o mesmo `.env`

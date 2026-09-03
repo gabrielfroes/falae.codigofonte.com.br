@@ -1,7 +1,11 @@
 # Imagem única para os processos "app" e "worker" — mesmo build, só muda o
 # comando na hora de rodar. Localmente via docker-compose.yml (serviços com
-# CMD diferente); no Dokploy via duas Applications com Start Command
+# command diferente); no Dokploy via duas Applications com Start Command
 # diferente, ambas com Build Type Dockerfile (ver docs/deploy-dokploy.md).
+#
+# O ENTRYPOINT roda "prisma migrate deploy" antes de qualquer comando —
+# não depende de lembrar de configurar isso certo no Start Command de cada
+# Application (foi exatamente esquecer isso que quebrou o primeiro deploy).
 
 FROM node:22-alpine AS base
 # pnpm 11 exige Node >=22.13 (engines) — node:20 falha em "pnpm install"
@@ -40,6 +44,9 @@ COPY --from=build /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=build /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=build /app/next.config.ts ./next.config.ts
 COPY --from=build /app/tsconfig.json ./tsconfig.json
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["pnpm", "start"]

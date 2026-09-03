@@ -21,6 +21,20 @@ export function buildAuthorizationUrl(state: string): string {
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
+/**
+ * Lê a resposta como texto primeiro — se não for JSON válido (ex: o Google
+ * devolveu uma página de erro genérica), ainda conseguimos logar o corpo
+ * bruto em vez de mascarar tudo atrás de "Unexpected token".
+ */
+async function readJsonSafely(response: Response): Promise<Record<string, unknown>> {
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { raw: text };
+  }
+}
+
 export async function exchangeCodeForAccessToken(code: string): Promise<string> {
   const body = new URLSearchParams({
     code,
@@ -35,9 +49,14 @@ export async function exchangeCodeForAccessToken(code: string): Promise<string> 
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
-  const payload = await response.json();
+  const payload = await readJsonSafely(response);
   if (!response.ok) {
-    throw new Error(payload.error_description ?? "Falha ao trocar o code pelo access token do Google");
+    throw new Error(
+      `Falha ao trocar o code pelo access token do Google (status ${response.status}, redirect_uri=${getRedirectUri()}): ${payload.error_description ?? payload.error ?? payload.raw ?? "erro desconhecido"}`,
+    );
+  }
+  if (typeof payload.access_token !== "string") {
+    throw new Error(`Google não retornou access_token (status ${response.status}): ${JSON.stringify(payload)}`);
   }
   return payload.access_token;
 }
@@ -48,9 +67,15 @@ export async function fetchGoogleUserInfo(
   const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  const payload = await response.json();
+  const payload = await readJsonSafely(response);
   if (!response.ok) {
-    throw new Error(payload.error?.message ?? "Falha ao buscar informações da conta Google");
+    throw new Error(
+      `Falha ao buscar informações da conta Google (status ${response.status}): ${(payload.error as { message?: string } | undefined)?.message ?? payload.raw ?? "erro desconhecido"}`,
+    );
   }
-  return { email: payload.email, emailVerified: payload.email_verified === true, nome: payload.name };
+  return {
+    email: payload.email as string,
+    emailVerified: payload.email_verified === true,
+    nome: payload.name as string,
+  };
 }
